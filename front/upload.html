@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mpianatra-midev</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome pour les icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+  <!-- Contenu principal centré -->
+  <div class="flex-grow flex items-center justify-center p-4">
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md">
+
+      <!-- Header -->
+      <h1 class="text-2xl font-bold text-center mb-1">📚 Mpianatra-midev</h1>
+      <p class="text-gray-400 text-center mb-4">
+        Importe ton mémoire, reçois ton PowerPoint
+      </p>
+
+      <!-- Statut IA -->
+      <div id="aiStatus" class="flex items-center justify-center gap-2 mb-6 
+           bg-gray-700 rounded-xl px-4 py-2">
+        <div id="aiDot" class="w-3 h-3 rounded-full bg-gray-500 animate-pulse"></div>
+        <span id="aiText" class="text-sm text-gray-400">Vérification de l'IA...</span>
+      </div>
+
+      <!-- Zone upload -->
+      <div class="border-2 border-dashed border-gray-500 rounded-xl p-6 text-center mb-4">
+        <p class="text-gray-400 mb-3">📄 Glisse ton fichier ici</p>
+        <input type="file" id="fileInput" accept=".pdf,.docx"
+          class="hidden" onchange="handleFile(this)">
+        <label for="fileInput"
+          class="cursor-pointer bg-orange-500 hover:bg-orange-600
+                 text-white px-4 py-2 rounded-lg transition">
+          Choisir un fichier
+        </label>
+        <p id="fileName" class="text-sm text-gray-400 mt-3">
+          Aucun fichier choisi
+        </p>
+      </div>
+
+      <!-- Bouton convertir -->
+      <button onclick="convertFile()" id="convertBtn"
+        class="w-full bg-orange-500 hover:bg-orange-600
+               text-white font-bold py-3 rounded-xl transition">
+        🚀 Convertir en PowerPoint
+      </button>
+
+      <!-- Progression -->
+      <div id="progressBox" class="hidden mt-4">
+        <div class="flex justify-between text-sm text-gray-400 mb-1">
+          <span id="progressText">En cours...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2">
+          <div id="progressBar"
+            class="bg-orange-500 h-2 rounded-full transition-all duration-500"
+            style="width: 0%"></div>
+        </div>
+        <div id="progressSteps" class="mt-3 space-y-1"></div>
+      </div>
+
+      <!-- Message statut -->
+      <p id="status" class="text-center text-sm mt-4 text-gray-400"></p>
+
+    </div>
+  </div>
+
+  <!-- FOOTER AJOUTÉ - En bas de page -->
+  <footer class="w-full bg-gray-950 border-t border-gray-800 mt-auto">
+    <div class="max-w-4xl mx-auto px-4 py-6">
+      <!-- Deux colonnes comme dans l'image -->
+      <div class="flex flex-col md:flex-row gap-6">
+        
+        <!-- Colonne gauche : Manoa NOTOAVINA -->
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-orange-500 mb-2">Manoa NOTOAVINA</h2>
+          <p class="text-gray-400 text-sm flex items-center gap-2 mb-4">
+            <i class="fas fa-code text-orange-500 text-xs"></i>
+            Développeur / Designer
+          </p>
+          
+          <div class="border-l-2 border-orange-600 pl-3 mb-4">
+            <p class="text-gray-500 text-xs italic leading-relaxed">
+              Ce site est une version de démonstration générée avec une assistance IA. Merci de valider son contenu avant toute utilisation en production.
+            </p>
+          </div>
+          
+          <p class="text-gray-600 text-xs">
+            © 2026 Manoa NOTOAVINA. Tous droits réservés.
+          </p>
+        </div>
+
+        <!-- Espace vide -->
+        <div class="hidden md:block w-8"></div>
+
+        <!-- Colonne droite : Contact -->
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-orange-400 mb-3">Contact</h3>
+          <div class="space-y-2">
+            <p class="text-gray-400 text-sm">
+        <i class="fas fa-phone-alt text-orange-500 text-sm"></i>
+            +261 34 65 861 96</p>
+            <p class="text-gray-400 text-sm">
+                <i class="fas fa-envelope text-orange-500 text-sm"></i>
+                notoavinamanoa@gmail.com
+            </p>
+            <p class="text-gray-400 text-sm">
+                <i class="fas fa-map-marker-alt text-orange-500 text-sm"></i>
+                Toamasina,Madagascar
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Vérifier si l'IA est active au chargement
+    async function checkAI() {
+      try {
+        const response = await fetch("http://localhost:8000/health");
+        const data = await response.json();
+
+        if (data.ai_active) {
+          document.getElementById("aiDot").className = 
+            "w-3 h-3 rounded-full bg-green-500 animate-pulse";
+          document.getElementById("aiText").textContent = 
+            "🤖 IA Groq active et prête";
+          document.getElementById("aiText").className = 
+            "text-sm text-green-400";
+        } else {
+          setAIInactive("IA inactive — mode basique");
+        }
+      } catch (e) {
+        setAIInactive("Serveur Python hors ligne");
+      }
+    }
+
+    function setAIInactive(msg) {
+      document.getElementById("aiDot").className = 
+        "w-3 h-3 rounded-full bg-red-500";
+      document.getElementById("aiText").textContent = "⚠️ " + msg;
+      document.getElementById("aiText").className = 
+        "text-sm text-red-400";
+    }
+
+    function handleFile(input) {
+      const name = input.files[0]?.name || "Aucun fichier choisi";
+      document.getElementById("fileName").textContent = name;
+    }
+
+    function addStep(text, done = false) {
+      const box = document.getElementById("progressSteps");
+      const div = document.createElement("div");
+      div.className = "text-xs " + (done ? "text-green-400" : "text-gray-400");
+      div.textContent = (done ? "✅ " : "⏳ ") + text;
+      box.appendChild(div);
+    }
+
+    function setProgress(percent, text) {
+      document.getElementById("progressBar").style.width = percent + "%";
+      document.getElementById("progressPercent").textContent = percent + "%";
+      document.getElementById("progressText").textContent = text;
+    }
+
+    async function convertFile() {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        document.getElementById("status").textContent = 
+          "⚠️ Veuillez choisir un fichier !";
+        return;
+      }
+
+      // Reset UI
+      document.getElementById("progressBox").classList.remove("hidden");
+      document.getElementById("progressSteps").innerHTML = "";
+      document.getElementById("status").textContent = "";
+      document.getElementById("convertBtn").disabled = true;
+      document.getElementById("convertBtn").textContent = "⏳ Conversion...";
+
+      // Étapes visuelles
+      setProgress(10, "Upload du fichier...");
+      addStep("Envoi du fichier");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        setProgress(30, "Extraction du texte...");
+        addStep("Extraction du texte", true);
+
+        setProgress(55, "Analyse IA en cours...");
+        addStep("Analyse IA Groq", true);
+
+        const response = await fetch("http://localhost/powerpoint/php/api.php", {
+          method: "POST",
+          body: formData
+        });
+
+        setProgress(80, "Génération du PowerPoint...");
+        addStep("Génération PowerPoint", true);
+
+        const result = await response.json();
+
+        if (result.error) {
+          document.getElementById("status").textContent = "❌ " + result.error;
+          setProgress(0, "Erreur");
+        } else {
+          setProgress(100, "Terminé !");
+          addStep("PowerPoint prêt !", true);
+          document.getElementById("status").textContent = 
+            `✅ ${result.slides_count} slides générées !`;
+          setTimeout(() => {
+            window.location.href = result.download_url;
+          }, 1000);
+        }
+
+      } catch (err) {
+        document.getElementById("status").textContent = "❌ " + err.message;
+        setProgress(0, "Erreur de connexion");
+      }
+
+      document.getElementById("convertBtn").disabled = false;
+      document.getElementById("convertBtn").textContent = 
+        "🚀 Convertir en PowerPoint";
+    }
+
+    // Vérifier l'IA au chargement
+    checkAI();
+  </script>
+</body>
+</html>
