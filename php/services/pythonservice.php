@@ -2,7 +2,7 @@
 function callPythonAPI($filePath, $filename) {
     
     // URL de l'API Python
-    $pythonUrl = "http://127.0.0.1:8000/convert";
+    $pythonUrl = "https://mpianatra-midev-by-manoa.onrender.com/convert";
 
     // Vérifier si le fichier existe
     if (!file_exists($filePath)) {
@@ -57,7 +57,7 @@ function callPythonAPI($filePath, $filename) {
 
     // Construire l'URL de téléchargement
     $outputFilename = $data["output_filename"];
-    $data["download_url"] = "http://localhost:3000/storage/output/" . $outputFilename;
+    $data["download_url"] = "https://mpianatra-midev-by-manoa.onrender.com/storage/output/" . $outputFilename;
 
     return $data;
 }

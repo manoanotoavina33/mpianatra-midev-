@@ -4,6 +4,7 @@ from extractor import extract_text
 from generator import create_pptx
 from ai_structurer import structure_content
 import shutil, uuid, os, traceback
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -13,6 +14,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/storage", StaticFiles(directory="../../storage"), name="storage")
 
 UPLOAD_DIR = "../../storage/uploads/"
 OUTPUT_DIR = "../../storage/output/"
